@@ -13,6 +13,7 @@ from views import analisisUnivariado
 from views import regresionLogistica
 from views import regresionLogisticaMultiple
 from views import mapaDeResidencias
+from views import regresionLogisticaReal
 import streamlit_shadcn_ui as ui
 import altair as alt
 
@@ -73,5 +74,7 @@ elif page == "regresion lineal simple":
     regresionLogistica.show(data)
 elif page == "regresion lineal multiple":
     regresionLogisticaMultiple.show(data)
+elif page == "regresion logistica":
+    regresionLogisticaReal.show(data)
 elif page == "Mapa de residencias":
     mapaDeResidencias.show(data)
