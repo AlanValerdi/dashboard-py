@@ -8,6 +8,7 @@ import numpy as np
 def loadData():
     df = pd.read_csv("actions/madrid_spain_Cleansed.csv")
     dfMx = pd.read_csv("actions/México_DesviaciónEstandar_Limpio.csv")
+    dfGr = pd.read_csv("actions/Grecia.csv")
     
     # ----------Spain----------
     # select both numeric cols and lists
@@ -38,6 +39,18 @@ def loadData():
     uniqueValuesHostIsSuperhostMx = categoricalHostIsSuperhostMx.unique()
     uniqueValuesHostIdentityVerifiedMx = categoricalHostIdentityVerifiedMx.unique()
 
+    # ----------Greece----------
+    numericDfGr = dfGr.select_dtypes('float', 'int')
+    numericColsGr = numericDfGr.columns
+
+    textDfGr = dfGr.select_dtypes('object')  
+    textColsGr = textDfGr.columns
+
+    categoricalHostIsSuperhostGr = dfGr['host_is_superhost']
+    categoricalHostIdentityVerifiedGr = dfGr['host_identity_verified']
+
+    uniqueValuesHostIsSuperhostGr = categoricalHostIsSuperhostGr.unique()
+    uniqueValuesHostIdentityVerifiedGr = categoricalHostIdentityVerifiedGr.unique()
 
     # ----------------------------------------------------------------------------------------
     # Data operations 
@@ -82,8 +95,25 @@ def loadData():
         "min_value": min_corr_val_mx
     }
 
+    # ----------Greece----------
+    greeceTotalValues = dfGr.count().sum()
 
+    # ---------- Correlation Insights (Greece) ----------
+    corr_matrix_greece = numericDfGr.corr()
+    corr_unstacked_gr = corr_matrix_greece.where(~np.eye(corr_matrix_greece.shape[0], dtype=bool)).unstack().dropna()
 
+    max_corr_gr = corr_unstacked_gr.idxmax()
+    max_corr_val_gr = corr_unstacked_gr.max()
+
+    min_corr_gr = corr_unstacked_gr.idxmin()
+    min_corr_val_gr = corr_unstacked_gr.min()
+
+    top_correlations_greece = {
+        "max_pair": max_corr_gr,
+        "max_value": max_corr_val_gr,
+        "min_pair": min_corr_gr,
+        "min_value": min_corr_val_gr
+    }
 
     # ---------- For Card Display ----------
     spDiffVsMex = round(((spainTotalValues - mexTotalValues) / mexTotalValues) * 100, 2)
@@ -92,9 +122,11 @@ def loadData():
     # ---------- For Charts display ---------- 
     superHostPieSp = df["host_is_superhost"].value_counts().reset_index()
     superHostPieMx = dfMx["host_is_superhost"].value_counts().reset_index()
+    superHostPieGr = dfGr["host_is_superhost"].value_counts().reset_index()
 
     identityVerifiedPieSp = df["host_identity_verified"].value_counts().reset_index()
     identityVerifiedPieMx = dfMx["host_identity_verified"].value_counts().reset_index()
+    identityVerifiedPieGr = dfGr["host_identity_verified"].value_counts().reset_index()
 
     return {
 
@@ -129,5 +161,20 @@ def loadData():
         "superHostPieMx": superHostPieMx,
         "identityVerifiedPieMx": identityVerifiedPieMx,
         "top_correlations_mex": top_correlations_mex,
+
+        # Greece
+        "dfGr": dfGr,
+        "numericDfGr": numericDfGr,
+        "numericColsGr": numericColsGr,
+        "textDfGr": textDfGr,
+        "textColsGr": textColsGr,
+        "categoricalHostIdentityVerifiedGr": categoricalHostIdentityVerifiedGr,
+        "categoricalHostIsSuperhostGr": categoricalHostIsSuperhostGr,
+        "uniqueValuesHostIdentityVerifiedGr": uniqueValuesHostIdentityVerifiedGr,
+        "uniqueValuesHostIsSuperhostGr": uniqueValuesHostIsSuperhostGr,
+        "greeceTotalValues": greeceTotalValues,
+        "superHostPieGr": superHostPieGr,
+        "identityVerifiedPieGr": identityVerifiedPieGr,
+        "top_correlations_greece": top_correlations_greece,
 
     }

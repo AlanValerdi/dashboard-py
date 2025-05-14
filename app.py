@@ -7,17 +7,12 @@ import pandas as pd
 import streamlit_shadcn_ui as ui
 from actions.dataLoadAction import loadData
 import streamlit as st
-from views.generalAnalysis import renderGeneralAnalysis
-from views.dichotomicAnalysis import renderDichotomicAnalysis
 from views import FirstAnalysis
 from views import vistaProperty
-from views import vistaRoom
-from views import minimumNight
 from views import analisisUnivariado
 from views import regresionLogistica
 from views import regresionLogisticaMultiple
 from views import mapaDeResidencias
-from views import datosGenerales
 import streamlit_shadcn_ui as ui
 import altair as alt
 
@@ -64,16 +59,14 @@ st.markdown("""
 with st.sidebar:
     st.markdown(f"<div class='center-logo'><img src='{logo_url}' width='120'></div>", unsafe_allow_html=True)
     st.markdown("<h1 style='color:white; font-size:40px'>Airbnb Dashboard</h1>", unsafe_allow_html=True)
-    page = st.sidebar.selectbox("Seleccionar Pagina", ["Introduction", "Spain vs Mexico", "Analisis de noches por room_type", "Analisis Univariado", "regresionLogistica", "regresionLogisticaMultiple", "Mapa de residencias", "datosGenerales"])
+    page = st.sidebar.selectbox("Seleccionar Pagina", ["Introducción", "México vs Paises", "Analisis Univariado", "regresionLogistica", "regresionLogisticaMultiple", "Mapa de residencias"])
 
 
 # Main View
-if page == "Introduction":
+if page == "Introducción":
     FirstAnalysis.show(data)
-elif page == "Spain vs Mexico":
+elif page == "México vs Paises":
     vistaProperty.show(data)
-elif page == "Analisis de noches por room_type":
-    minimumNight.renderMinimumNightsAnalysis(data)
 elif page == "Analisis Univariado":
     analisisUnivariado.show(data)
 elif page == "regresionLogistica":

@@ -9,12 +9,36 @@ from sklearn.linear_model import LinearRegression
 
 
 def show(data):
-    # Datos
-    df = data['df']
-    numeric_df = data['numericDf']
-    numeric_cols = list(data['numericCols'])
-
     st.title("Regresión Lineal Múltiple")
+    
+    # Selección de país
+    country = st.sidebar.selectbox(
+        "País",
+        options=["España", "México", "Grecia"],
+        format_func=lambda x: x
+    )
+
+    # Seleccionar el dataframe correspondiente
+    if country == "España":
+        numeric_df = data['numericDf']
+        numeric_cols = list(data['numericCols'])
+    elif country == "México":
+        numeric_df = data['numericDfMx']
+        numeric_cols = list(data['numericColsMx'])
+    else:  # Grecia
+        numeric_df = data['numericDfGr']
+        numeric_cols = list(data['numericColsGr'])
+
+    # Opción de comparación con México
+    if country != "México":
+        compare_with_mexico = st.sidebar.radio(
+            "¿Comparar con México?",
+            options=["No", "Sí"],
+            horizontal=True
+        )
+    else:
+        compare_with_mexico = "No"
+
     st.sidebar.header("Opciones de Mapa de Calor")
 
     # --- Heatmap ---
@@ -53,7 +77,7 @@ def show(data):
             st.warning("Selecciona variables válidas antes de generar el heatmap.")
             return
 
-        st.subheader("Mapa de calor")
+        st.subheader(f"Mapa de calor - {country}")
         n = df_plot.shape[1]
         tick_fs = int(np.interp(n, [5, 30], [14, 6]))
         annot_fs = int(np.interp(n, [5, 30], [14, 6]))
@@ -73,6 +97,28 @@ def show(data):
         plt.xticks(rotation=90, fontsize=tick_fs)
         plt.yticks(rotation=0, fontsize=tick_fs)
         st.pyplot(fig)
+
+        # Mostrar mapa de calor de México si se seleccionó comparación
+        if compare_with_mexico == "Sí":
+            st.subheader("Mapa de calor - México (Comparación)")
+            df_mexico = data['numericDfMx']
+            df_plot_mx = df_mexico[df_plot.columns]
+            corr_mat_mx = df_plot_mx.corr()
+            fig_mx, ax_mx = plt.subplots(figsize=(12, 10))
+            sns.heatmap(
+                corr_mat_mx,
+                cmap="coolwarm",
+                annot=True,
+                fmt=".2f",
+                annot_kws={"size": annot_fs},
+                linewidths=0.5,
+                square=True,
+                cbar_kws={"shrink": 0.8},
+                ax=ax_mx
+            )
+            plt.xticks(rotation=90, fontsize=tick_fs)
+            plt.yticks(rotation=0, fontsize=tick_fs)
+            st.pyplot(fig_mx)
 
     # --- Múltiple Regresión ---
     st.sidebar.subheader("Selección de variables para Regresión")
@@ -98,7 +144,7 @@ def show(data):
             var_name="Variable independiente",
             value_name="Valor"
         )
-        st.subheader(f"Dispersión vs {dep_var}")
+        st.subheader(f"Dispersión vs {dep_var} - {country}")
         fig_scatter = px.scatter(
             df_melt,
             x="Valor",
@@ -108,9 +154,30 @@ def show(data):
             labels={"Valor": "Valor variable independiente"}
         )
         st.plotly_chart(fig_scatter, use_container_width=True)
+
+        # Mostrar scatter de México si se seleccionó comparación
+        if compare_with_mexico == "Sí":
+            st.subheader(f"Dispersión vs {dep_var} - México (Comparación)")
+            df_mexico = data['numericDfMx']
+            df_melt_mx = pd.melt(
+                df_mexico,
+                id_vars=[dep_var],
+                value_vars=indep_vars,
+                var_name="Variable independiente",
+                value_name="Valor"
+            )
+            fig_scatter_mx = px.scatter(
+                df_melt_mx,
+                x="Valor",
+                y=dep_var,
+                color="Variable independiente",
+                trendline="ols",
+                labels={"Valor": "Valor variable independiente"}
+            )
+            st.plotly_chart(fig_scatter_mx, use_container_width=True)
         return
 
-    # Ejecutar regresión múltiple
+    # Ejecutar regresión múltiple para el país seleccionado
     X = numeric_df[indep_vars]
     y = numeric_df[[dep_var]]
     model = LinearRegression()
@@ -119,7 +186,7 @@ def show(data):
     r2 = model.score(X, y)
     r = np.sqrt(r2)
 
-    st.subheader("Resultados del Modelo")
+    st.subheader(f"Resultados del Modelo - {country}")
     st.write(f"**Variable dependiente:** {dep_var}")
     st.write(f"**Variables independientes:** {indep_vars}")
     st.write(f"Coeficiente de determinación (R²): {r2:.3f}")
@@ -148,10 +215,58 @@ def show(data):
         marker=dict(color='red')
     ))
     fig_comp.update_layout(
-        title=f"Real vs Predicho de {dep_var}",
+        title=f"Real vs Predicho de {dep_var} - {country}",
         xaxis_title=var0,
         yaxis_title=dep_var
     )
     st.plotly_chart(fig_comp, use_container_width=True)
     # Cleanup
     numeric_df.drop(columns=[f"pred_{dep_var}"], inplace=True)
+
+    # Mostrar comparación con México si se seleccionó
+    if compare_with_mexico == "Sí":
+        # Ejecutar regresión múltiple para México
+        df_mexico = data['numericDfMx']
+        X_mx = df_mexico[indep_vars]
+        y_mx = df_mexico[[dep_var]]
+        model_mx = LinearRegression()
+        model_mx.fit(X_mx, y_mx)
+        y_pred_mx = model_mx.predict(X_mx)
+        r2_mx = model_mx.score(X_mx, y_mx)
+        r_mx = np.sqrt(r2_mx)
+
+        st.subheader("Resultados del Modelo - México (Comparación)")
+        st.write(f"**Variable dependiente:** {dep_var}")
+        st.write(f"**Variables independientes:** {indep_vars}")
+        st.write(f"Coeficiente de determinación (R²): {r2_mx:.3f}")
+        st.write(f"Coeficiente de correlación (R): {r_mx:.3f}")
+
+        # Comparación real vs predicho México
+        df_mexico[f"pred_{dep_var}"] = y_pred_mx
+        st.subheader("Tabla comparativa Real vs Predicho - México")
+        st.dataframe(df_mexico[[dep_var, f"pred_{dep_var}"]].head(10))
+
+        st.subheader("Gráfico comparativo - México")
+        fig_comp_mx = go.Figure()
+        fig_comp_mx.add_trace(go.Scatter(
+            x=df_mexico[var0],
+            y=df_mexico[dep_var],
+            mode='markers',
+            name='Real',
+            marker=dict(color='blue')
+        ))
+        fig_comp_mx.add_trace(go.Scatter(
+            x=df_mexico[var0],
+            y=df_mexico[f"pred_{dep_var}"],
+            mode='markers',
+            name='Predicho',
+            marker=dict(color='red')
+        ))
+        fig_comp_mx.update_layout(
+            title=f"Real vs Predicho de {dep_var} - México",
+            xaxis_title=var0,
+            yaxis_title=dep_var
+        )
+        st.plotly_chart(fig_comp_mx, use_container_width=True)
+        # Cleanup
+        df_mexico.drop(columns=[f"pred_{dep_var}"], inplace=True)
