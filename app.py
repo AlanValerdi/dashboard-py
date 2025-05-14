@@ -59,7 +59,7 @@ st.markdown("""
 with st.sidebar:
     st.markdown(f"<div class='center-logo'><img src='{logo_url}' width='120'></div>", unsafe_allow_html=True)
     st.markdown("<h1 style='color:white; font-size:40px'>Airbnb Dashboard</h1>", unsafe_allow_html=True)
-    page = st.sidebar.selectbox("Seleccionar Pagina", ["Introducción", "México vs Paises", "Analisis Univariado", "regresionLogistica", "regresionLogisticaMultiple", "Mapa de residencias"])
+    page = st.sidebar.selectbox("Seleccionar Pagina", ["Introducción", "México vs Paises", "Analisis Univariado", "regresion lineal simple", "regresion lineal multiple", "Mapa de residencias"])
 
 
 # Main View
@@ -69,9 +69,9 @@ elif page == "México vs Paises":
     vistaProperty.show(data)
 elif page == "Analisis Univariado":
     analisisUnivariado.show(data)
-elif page == "regresionLogistica":
+elif page == "regresion lineal simple":
     regresionLogistica.show(data)
-elif page == "regresionLogisticaMultiple":
+elif page == "regresion lineal multiple":
     regresionLogisticaMultiple.show(data)
 elif page == "Mapa de residencias":
     mapaDeResidencias.show(data)
