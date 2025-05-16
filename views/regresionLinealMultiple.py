@@ -133,6 +133,8 @@ def show(data):
     if len(indep_vars) > 5:
         st.sidebar.warning("Máximo 5 variables independientes.")
         return
+    
+    comparative_table = st.sidebar.checkbox("Mostrar tabla comparativa")
     run_model = st.sidebar.button("Mostrar Regresión")
 
     # Si no ejecuta regresión, mostrar scatter con trendline
@@ -187,15 +189,16 @@ def show(data):
     r = np.sqrt(r2)
 
     st.subheader(f"Resultados del Modelo - {country}")
-    st.write(f"**Variable dependiente:** {dep_var}")
-    st.write(f"**Variables independientes:** {indep_vars}")
-    st.write(f"Coeficiente de determinación (R²): {r2:.3f}")
-    st.write(f"Coeficiente de correlación (R): {r:.3f}")
+    #st.write(f"**Variable dependiente:** {dep_var}")
+    #st.write(f"**Variables independientes:** {indep_vars}")
+    #st.write(f"Coeficiente de determinación (R²): {r2:.3f}")
+    #st.write(f"Coeficiente de correlación (R): {r:.3f}")
 
     # Comparación real vs predicho
     numeric_df[f"pred_{dep_var}"] = y_pred
-    st.subheader("Tabla comparativa Real vs Predicho")
-    st.dataframe(numeric_df[[dep_var, f"pred_{dep_var}"]].head(10))
+    if comparative_table:
+        st.subheader("Tabla comparativa Real vs Predicho")
+        st.dataframe(numeric_df[[dep_var, f"pred_{dep_var}"]].head(10))
 
     st.subheader("Gráfico comparativo")
     fig_comp = go.Figure()
@@ -220,6 +223,10 @@ def show(data):
         yaxis_title=dep_var
     )
     st.plotly_chart(fig_comp, use_container_width=True)
+    
+    st.write(f"Coeficiente de determinación (R²): {r2:.3f}")
+    st.write(f"Coeficiente de correlación (R): {r:.3f}")
+    
     # Cleanup
     numeric_df.drop(columns=[f"pred_{dep_var}"], inplace=True)
 
@@ -236,15 +243,16 @@ def show(data):
         r_mx = np.sqrt(r2_mx)
 
         st.subheader("Resultados del Modelo - México (Comparación)")
-        st.write(f"**Variable dependiente:** {dep_var}")
-        st.write(f"**Variables independientes:** {indep_vars}")
-        st.write(f"Coeficiente de determinación (R²): {r2_mx:.3f}")
-        st.write(f"Coeficiente de correlación (R): {r_mx:.3f}")
+        #st.write(f"**Variable dependiente:** {dep_var}")
+        #st.write(f"**Variables independientes:** {indep_vars}")
+        #st.write(f"Coeficiente de determinación (R²): {r2_mx:.3f}")
+        #st.write(f"Coeficiente de correlación (R): {r_mx:.3f}")
 
         # Comparación real vs predicho México
         df_mexico[f"pred_{dep_var}"] = y_pred_mx
-        st.subheader("Tabla comparativa Real vs Predicho - México")
-        st.dataframe(df_mexico[[dep_var, f"pred_{dep_var}"]].head(10))
+        if comparative_table:
+            st.subheader("Tabla comparativa Real vs Predicho - México")
+            st.dataframe(df_mexico[[dep_var, f"pred_{dep_var}"]].head(10))
 
         st.subheader("Gráfico comparativo - México")
         fig_comp_mx = go.Figure()
@@ -268,5 +276,9 @@ def show(data):
             yaxis_title=dep_var
         )
         st.plotly_chart(fig_comp_mx, use_container_width=True)
+        
+        st.write(f"Coeficiente de determinación (R²): {r2_mx:.3f}")
+        st.write(f"Coeficiente de correlación (R): {r_mx:.3f}")
+        
         # Cleanup
         df_mexico.drop(columns=[f"pred_{dep_var}"], inplace=True)

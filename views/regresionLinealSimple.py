@@ -127,6 +127,8 @@ def show(data):
     dep_var = st.sidebar.selectbox("Variable dependiente", options=numeric_cols)
     indep_opts = [c for c in numeric_cols if c != dep_var]
     indep_var = st.sidebar.selectbox("Variable independiente", options=indep_opts)
+    
+    comparative_table = st.sidebar.checkbox("Mostrar tabla comparativa")
 
     run_reg = st.sidebar.button("Mostrar Regresión Lineal Simple")
 
@@ -162,14 +164,15 @@ def show(data):
         r = np.sqrt(r2)
 
         st.subheader(f"Resultados del Modelo - {country}")
-        st.write(f"**Dependiente:** {dep_var}")
-        st.write(f"**Independiente:** {indep_var}")
-        st.write(f"R²: {r2:.3f}, R: {r:.3f}")
+        #st.write(f"**Dependiente:** {dep_var}")
+        #st.write(f"**Independiente:** {indep_var}")
+        #st.write(f"R²: {r2:.3f}, R: {r:.3f}")
 
         # Tabla comparativa
         numeric_df[f"pred_{dep_var}"] = y_pred
-        st.subheader("Real vs Predicho")
-        st.dataframe(numeric_df[[dep_var, f"pred_{dep_var}" ]].head(10))
+        if comparative_table:
+            st.subheader("Real vs Predicho")
+            st.dataframe(numeric_df[[dep_var, f"pred_{dep_var}" ]].head(10))
 
         # Gráfico comparativo
         fig_comp = go.Figure()
@@ -177,6 +180,9 @@ def show(data):
         fig_comp.add_trace(go.Scatter(x=numeric_df[indep_var], y=numeric_df[f"pred_{dep_var}"], mode='markers', name='Predicho', marker=dict(color='red')))
         fig_comp.update_layout(title=f"{dep_var} Real vs Predicho - {country}", xaxis_title=indep_var, yaxis_title=dep_var)
         st.plotly_chart(fig_comp, use_container_width=True)
+        
+        st.write(f"Coeficiente de determinación (R²): {r2:.3f}")
+        st.write(f"Coeficiente de correlación (R): {r:.3f}")
 
         # Limpieza
         numeric_df.drop(columns=[f"pred_{dep_var}"], inplace=True)
@@ -194,14 +200,15 @@ def show(data):
             r_mx = np.sqrt(r2_mx)
 
             st.subheader("Resultados del Modelo - México (Comparación)")
-            st.write(f"**Dependiente:** {dep_var}")
-            st.write(f"**Independiente:** {indep_var}")
-            st.write(f"R²: {r2_mx:.3f}, R: {r_mx:.3f}")
+            #st.write(f"**Dependiente:** {dep_var}")
+            #st.write(f"**Independiente:** {indep_var}")
+            #st.write(f"R²: {r2_mx:.3f}, R: {r_mx:.3f}")
 
             # Tabla comparativa México
             df_mexico[f"pred_{dep_var}"] = y_pred_mx
-            st.subheader("Real vs Predicho - México")
-            st.dataframe(df_mexico[[dep_var, f"pred_{dep_var}" ]].head(10))
+            if comparative_table:
+                st.subheader("Real vs Predicho - México")
+                st.dataframe(df_mexico[[dep_var, f"pred_{dep_var}" ]].head(10))
 
             # Gráfico comparativo México
             fig_comp_mx = go.Figure()
@@ -209,6 +216,9 @@ def show(data):
             fig_comp_mx.add_trace(go.Scatter(x=df_mexico[indep_var], y=df_mexico[f"pred_{dep_var}"], mode='markers', name='Predicho', marker=dict(color='red')))
             fig_comp_mx.update_layout(title=f"{dep_var} Real vs Predicho - México", xaxis_title=indep_var, yaxis_title=dep_var)
             st.plotly_chart(fig_comp_mx, use_container_width=True)
+            
+            st.write(f"Coeficiente de determinación (R²): {r2_mx:.3f}")
+            st.write(f"Coeficiente de correlación (R): {r_mx:.3f}")
 
             # Limpieza
             df_mexico.drop(columns=[f"pred_{dep_var}"], inplace=True)

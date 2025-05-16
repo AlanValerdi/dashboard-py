@@ -10,8 +10,8 @@ import streamlit as st
 from views import FirstAnalysis
 from views import vistaProperty
 from views import analisisUnivariado
-from views import regresionLogistica
-from views import regresionLogisticaMultiple
+from views import regresionLinealSimple
+from views import regresionLinealMultiple
 from views import mapaDeResidencias
 from views import regresionLogisticaReal
 import streamlit_shadcn_ui as ui
@@ -60,7 +60,7 @@ st.markdown("""
 with st.sidebar:
     st.markdown(f"<div class='center-logo'><img src='{logo_url}' width='120'></div>", unsafe_allow_html=True)
     st.markdown("<h1 style='color:white; font-size:40px'>Airbnb Dashboard</h1>", unsafe_allow_html=True)
-    page = st.sidebar.selectbox("Seleccionar Pagina", ["Introducción", "México vs Paises", "Analisis Univariado", "regresion lineal simple", "regresion lineal multiple", "regresion logistica", "Mapa de residencias"])
+    page = st.sidebar.selectbox("Seleccionar Pagina", ["Introducción", "México vs Paises", "Analisis Univariado", "Regresión Lineal Simple", "Regresión Lineal Multiple", "Regresión Logistica", "Mapa de residencias"])
 
 
 # Main View
@@ -70,11 +70,11 @@ elif page == "México vs Paises":
     vistaProperty.show(data)
 elif page == "Analisis Univariado":
     analisisUnivariado.show(data)
-elif page == "regresion lineal simple":
-    regresionLogistica.show(data)
-elif page == "regresion lineal multiple":
-    regresionLogisticaMultiple.show(data)
-elif page == "regresion logistica":
+elif page == "Regresión Lineal Simple":
+    regresionLinealSimple.show(data)
+elif page == "Regresión Lineal Multiple":
+    regresionLinealMultiple.show(data)
+elif page == "Regresion Logistica":
     regresionLogisticaReal.show(data)
 elif page == "Mapa de residencias":
     mapaDeResidencias.show(data)
