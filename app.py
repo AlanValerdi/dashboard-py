@@ -74,7 +74,7 @@ elif page == "Regresión Lineal Simple":
     regresionLinealSimple.show(data)
 elif page == "Regresión Lineal Multiple":
     regresionLinealMultiple.show(data)
-elif page == "Regresion Logistica":
+elif page == "Regresión Logistica":
     regresionLogisticaReal.show(data)
 elif page == "Mapa de residencias":
     mapaDeResidencias.show(data)
