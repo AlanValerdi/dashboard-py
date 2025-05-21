@@ -5,15 +5,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, accuracy_score
+import streamlit_shadcn_ui as ui
 
 def show(data):
     st.title("Regresión Logística")
     
     # Sidebar controls for country visibility
     st.sidebar.subheader("Mostrar países")
-    show_spain = st.sidebar.checkbox("España", value=True)
-    show_mexico = st.sidebar.checkbox("México", value=True)
-    show_greece = st.sidebar.checkbox("Grecia", value=True)
+    show_spain = st.sidebar.checkbox("🇪🇸 España", value=True)
+    show_mexico = st.sidebar.checkbox("🇲🇽 México", value=True)
+    show_greece = st.sidebar.checkbox("🇬🇷 Grecia", value=True)
 
     # Universal controls in sidebar
     st.sidebar.subheader("Configuración del Modelo")
@@ -46,19 +47,15 @@ def show(data):
         st.warning("Por favor selecciona al menos una variable independiente.")
         return
     
-    # Universal analysis option
-    opcRegLog = st.sidebar.radio(
-        "Selecciona una opción a analizar:",
-        (
-            "Predicción",
-            "Matriz de Confusión",
-            "Metricas del modelo"
-        )
-    )
+    # Replace radio buttons with checkboxes
+    st.sidebar.subheader("Selecciona opciones a mostrar:")
+    show_prediction = st.sidebar.checkbox("📊 Predicción", value=True)
+    show_confusion = st.sidebar.checkbox("🎯 Matriz de Confusión")
+    show_metrics = st.sidebar.checkbox("📈 Métricas del modelo")
 
     # Function to run logistic regression for a country
-    def run_logistic_regression(numeric_df, binary_df, country_name):
-        st.subheader(f"Regresión Logística - {country_name}")
+    def run_logistic_regression(numeric_df, binary_df, country_name, country_emoji):
+        st.subheader(f"Regresión Logística - {country_emoji} {country_name}")
         
         # Filter numeric columns to only include selected ones that exist in this country
         available_vars = [var for var in independent_variables if var in numeric_df.columns]
@@ -85,43 +82,65 @@ def show(data):
         y_pred = modelo.predict(X_test)
         y_proba = modelo.predict_proba(X_test)
         
-        if opcRegLog == "Predicción":
+        if show_prediction:
+            st.write("### 📊 Predicciones del modelo")
             pred_df = X_test.copy()
             pred_df = pd.DataFrame(pred_df, columns=available_vars)
             pred_df["Probabilidad False"] = y_proba[:, 0]
             pred_df["Probabilidad True"] = y_proba[:, 1]
             pred_df["Predicción"] = y_pred
-
-            st.write("Predicciones del modelo")
             st.dataframe(pred_df.head(10))  # Mostrar primeras 10 filas
             
-        elif opcRegLog == "Matriz de Confusión":
-            st.write("Matriz de confusión")
+        if show_confusion:
+            st.write("### 🎯 Matriz de confusión")
             matriz = confusion_matrix(y_test, y_pred)
             st.write(pd.DataFrame(matriz, index=["Positivo", "Negativo"], columns=["Predicho 0", "Predicho 1"]))
             
-        elif opcRegLog == "Metricas del modelo":
-            st.write("Métricas del Modelo")
+        if show_metrics:
+            st.write("### 📈 Métricas del Modelo")
             
-            precisionf = precision_score(y_test, y_pred, average="binary", pos_label="f")
-            precisiont = precision_score(y_test, y_pred, average="binary", pos_label="t")
+            # Precisión
+            precision_true = precision_score(y_test, y_pred, average="binary", pos_label="t")
+            precision_false = precision_score(y_test, y_pred, average="binary", pos_label="f")
+            
+            # Exactitud
             exactitud = accuracy_score(y_test, y_pred)
-            sensibilidadf = recall_score(y_test, y_pred, average="binary", pos_label="f")
-            sensibilidadt = recall_score(y_test, y_pred, average="binary", pos_label="t")
+            
+            # Sensibilidad
+            sensibilidad_true = recall_score(y_test, y_pred, average="binary", pos_label="t")
+            sensibilidad_false = recall_score(y_test, y_pred, average="binary", pos_label="f")
 
-            # Crear tabla con precisión y sensibilidad por clase, y exactitud en una sola columna
-            metricas_df = pd.DataFrame({
-                "f": [precisionf, sensibilidadf, exactitud],
-                "t": [precisiont, sensibilidadt, exactitud] 
-            }, index=["Precisión", "Sensibilidad", "Exactitud"])
-
-            metricas_df = metricas_df.fillna("")  
-
-            metricas_df["f"] = pd.to_numeric(metricas_df["f"], errors='coerce')
-            metricas_df["t"] = pd.to_numeric(metricas_df["t"], errors='coerce')
-
-            # Mostrar tabla formateada
-            st.table(metricas_df.style.format("{:.2f}"))
+            # Create metrics cards
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                ui.metric_card(
+                    title="Precisión (True)",
+                    content=f"{precision_true:.4f}",
+                    description="Precisión para la clase True"
+                )
+                ui.metric_card(
+                    title="Precisión (False)",
+                    content=f"{precision_false:.4f}",
+                    description="Precisión para la clase False"
+                )
+                ui.metric_card(
+                    title="Exactitud",
+                    content=f"{exactitud:.4f}",
+                    description="Exactitud general del modelo"
+                )
+            
+            with col2:
+                ui.metric_card(
+                    title="Sensibilidad (True)",
+                    content=f"{sensibilidad_true:.4f}",
+                    description="Sensibilidad para la clase True"
+                )
+                ui.metric_card(
+                    title="Sensibilidad (False)",
+                    content=f"{sensibilidad_false:.4f}",
+                    description="Sensibilidad para la clase False"
+                )
 
     # Create three columns for the countries
     col1, col2, col3 = st.columns(3)
@@ -132,7 +151,8 @@ def show(data):
             run_logistic_regression(
                 data['numericDf'],
                 data['df'][['host_is_superhost', 'host_identity_verified']],
-                "España"
+                "España",
+                "🇪🇸"
             )
 
     # Mexico
@@ -141,7 +161,8 @@ def show(data):
             run_logistic_regression(
                 data['numericDfMx'],
                 data['dfMx'][['host_is_superhost', 'host_identity_verified']],
-                "México"
+                "México",
+                "🇲🇽"
             )
 
     # Greece
@@ -150,5 +171,6 @@ def show(data):
             run_logistic_regression(
                 data['numericDfGr'],
                 data['dfGr'][['host_is_superhost', 'host_identity_verified']],
-                "Grecia"
+                "Grecia",
+                "🇬🇷"
             )
